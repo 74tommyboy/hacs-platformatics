@@ -1,0 +1,1 @@
+"""Platformatics PoE lighting integration."""
