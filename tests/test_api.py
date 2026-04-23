@@ -2,6 +2,7 @@
 import pytest
 from aioresponses import aioresponses
 import aiohttp
+import yarl
 from custom_components.platformatics.api import (
     PlatformaticsApi,
     PlatformaticsAuthError,
@@ -111,3 +112,40 @@ async def test_get_reauth_on_401(authed_api):
         zones = await authed_api.get_zones()
         assert zones == ZONE_PAYLOAD
         assert authed_api.token == "newtoken"
+
+
+@pytest.mark.asyncio
+async def test_set_zone_level(authed_api):
+    with aioresponses() as m:
+        m.put(f"{BASE_URL}/api/level/zones/1", payload=True, status=200)
+        await authed_api.set_zone_level(zone_id=1, level=75)
+        call = m.requests[("PUT", yarl.URL(f"{BASE_URL}/api/level/zones/1"))][0]
+        assert call.kwargs["json"] == {"value": 75}
+
+
+@pytest.mark.asyncio
+async def test_set_zone_level_with_output_state(authed_api):
+    with aioresponses() as m:
+        m.put(f"{BASE_URL}/api/level/zones/1", payload=True, status=200)
+        await authed_api.set_zone_level(zone_id=1, level=50, output_state=True)
+        call = m.requests[("PUT", yarl.URL(f"{BASE_URL}/api/level/zones/1"))][0]
+        assert call.kwargs["json"] == {"value": 50, "outputState": True}
+
+
+@pytest.mark.asyncio
+async def test_set_zone_output_state_off(authed_api):
+    with aioresponses() as m:
+        m.put(f"{BASE_URL}/api/level/zones/1", payload=True, status=200)
+        await authed_api.set_zone_output_state(zone_id=1, on=False)
+        call = m.requests[("PUT", yarl.URL(f"{BASE_URL}/api/level/zones/1"))][0]
+        assert call.kwargs["json"] == {"outputState": False}
+
+
+@pytest.mark.asyncio
+async def test_put_reauth_on_401(authed_api):
+    with aioresponses() as m:
+        m.put(f"{BASE_URL}/api/level/zones/1", status=401)
+        m.post(f"{BASE_URL}/token", payload={"access_token": "fresh"}, status=200)
+        m.put(f"{BASE_URL}/api/level/zones/1", payload=True, status=200)
+        await authed_api.set_zone_output_state(zone_id=1, on=True)
+        assert authed_api.token == "fresh"

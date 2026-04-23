@@ -96,3 +96,37 @@ class PlatformaticsApi:
     async def get_devices(self) -> list[dict]:
         """Return all devices from the controller."""
         return await self._get("/api/devices")
+
+    async def _put(self, path: str, data: dict, _retry: bool = True) -> None:
+        """Perform an authenticated PUT. Re-authenticates once on 401."""
+        try:
+            async with self._session.put(
+                f"{self.base_url}{path}",
+                headers=self._auth_headers,
+                json=data,
+                ssl=False,
+            ) as resp:
+                if resp.status == 401 and _retry:
+                    await self.authenticate()
+                    return await self._put(path, data, _retry=False)
+                resp.raise_for_status()
+        except PlatformaticsAuthError:
+            raise
+        except aiohttp.ClientError as err:
+            raise PlatformaticsApiError(f"Request failed: {err}") from err
+
+    async def set_zone_level(
+        self,
+        zone_id: int,
+        level: int,
+        output_state: bool | None = None,
+    ) -> None:
+        """Set zone brightness level (0-100). Optionally set on/off state."""
+        body: dict = {"value": level}
+        if output_state is not None:
+            body["outputState"] = output_state
+        await self._put(f"/api/level/zones/{zone_id}", body)
+
+    async def set_zone_output_state(self, zone_id: int, on: bool) -> None:
+        """Turn a zone on or off without changing its level."""
+        await self._put(f"/api/level/zones/{zone_id}", {"outputState": on})
