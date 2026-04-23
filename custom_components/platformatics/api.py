@@ -62,3 +62,37 @@ class PlatformaticsApi:
             raise
         except aiohttp.ClientError as err:
             raise PlatformaticsApiError(f"Connection error: {err}") from err
+
+    @property
+    def _auth_headers(self) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {self._token}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+
+    async def _get(self, path: str, _retry: bool = True) -> list | dict:
+        """Perform an authenticated GET. Re-authenticates once on 401."""
+        try:
+            async with self._session.get(
+                f"{self.base_url}{path}",
+                headers=self._auth_headers,
+                ssl=False,
+            ) as resp:
+                if resp.status == 401 and _retry:
+                    await self.authenticate()
+                    return await self._get(path, _retry=False)
+                resp.raise_for_status()
+                return await resp.json()
+        except PlatformaticsAuthError:
+            raise
+        except aiohttp.ClientError as err:
+            raise PlatformaticsApiError(f"Request failed: {err}") from err
+
+    async def get_zones(self) -> list[dict]:
+        """Return all zones from the controller."""
+        return await self._get("/api/zones")
+
+    async def get_devices(self) -> list[dict]:
+        """Return all devices from the controller."""
+        return await self._get("/api/devices")
