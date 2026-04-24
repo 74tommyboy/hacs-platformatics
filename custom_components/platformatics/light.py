@@ -56,6 +56,11 @@ class PlatformaticsZoneLight(CoordinatorEntity[PlatformaticsCoordinator], LightE
         return round(level * 255 / 100)
 
     @property
+    def _current_level(self) -> int:
+        """Return the zone's current level (0-100), defaulting to 100."""
+        return self._zone.get("level", 100) or 100
+
+    @property
     def unique_id(self) -> str:
         return self._attr_unique_id
 
@@ -68,12 +73,12 @@ class PlatformaticsZoneLight(CoordinatorEntity[PlatformaticsCoordinator], LightE
             )
         else:
             await self.coordinator.api.set_zone_output_state(
-                zone_id=self._zone_id, on=True
+                zone_id=self._zone_id, on=True, current_level=self._current_level
             )
         await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.coordinator.api.set_zone_output_state(
-            zone_id=self._zone_id, on=False
+            zone_id=self._zone_id, on=False, current_level=self._current_level
         )
         await self.coordinator.async_request_refresh()

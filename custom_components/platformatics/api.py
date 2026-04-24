@@ -127,6 +127,16 @@ class PlatformaticsApi:
             body["outputState"] = output_state
         await self._put(f"/api/level/zones/{zone_id}", body)
 
-    async def set_zone_output_state(self, zone_id: int, on: bool) -> None:
-        """Turn a zone on or off without changing its level."""
-        await self._put(f"/api/level/zones/{zone_id}", {"outputState": on})
+    async def set_zone_output_state(
+        self, zone_id: int, on: bool, current_level: int = 100
+    ) -> None:
+        """Turn a zone on or off without changing its level.
+
+        The /api/level/zones endpoint requires ``value`` to always be present.
+        ``current_level`` should be the zone's current brightness (0-100) so
+        the controller preserves it when toggling state.
+        """
+        await self._put(
+            f"/api/level/zones/{zone_id}",
+            {"value": current_level, "outputState": on},
+        )
