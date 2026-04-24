@@ -119,7 +119,7 @@ class _SensorEntity:
 
 
 # homeassistant.helpers.aiohttp_client
-async def _async_get_clientsession(hass):
+def _async_get_clientsession(hass):
     from unittest.mock import MagicMock
     return MagicMock()
 
