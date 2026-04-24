@@ -63,6 +63,9 @@ class _CoordinatorEntity:
 class _ConfigFlow:
     VERSION = 1
 
+    def __init_subclass__(cls, domain=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+
     def __init__(self):
         self.hass = None
 

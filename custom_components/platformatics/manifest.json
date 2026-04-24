@@ -3,10 +3,10 @@
   "name": "Platformatics",
   "version": "1.0.0",
   "config_flow": true,
-  "documentation": "https://github.com/TommyboyDesigns/hacs-platformatics",
-  "issue_tracker": "https://github.com/TommyboyDesigns/hacs-platformatics/issues",
+  "documentation": "https://github.com/74tommyboy/hacs-platformatics",
+  "issue_tracker": "https://github.com/74tommyboy/hacs-platformatics/issues",
   "requirements": [],
   "dependencies": [],
-  "codeowners": ["@TommyboyDesigns"],
+  "codeowners": ["@74tommyboy"],
   "iot_class": "local_polling"
 }

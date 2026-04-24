@@ -17,7 +17,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-class PlatformaticsConfigFlow(config_entries.ConfigFlow):
+class PlatformaticsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle the initial setup flow."""
 
     VERSION = 1
